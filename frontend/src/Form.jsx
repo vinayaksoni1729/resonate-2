@@ -323,10 +323,11 @@ const Form = () => {
             {/* Registration Details */}
             {/* The rest of the submitted content */}
             <Stepper
-              activeStep={4}
+              activeStep={steps.length}
               alternativeLabel
               sx={{
                 width: "100%",
+                mb: 4,
                 "& .MuiStepIcon-root": {
                   color: "#333333",
                   fontSize: { xs: "1.2rem", md: "1.5rem" },
@@ -359,75 +360,87 @@ const Form = () => {
                 </Step>
               ))}
             </Stepper>
-            {/* Title and Divider */}
-            <Typography
-              mt={4}
-              variant="h5"
-              gutterBottom
-              sx={{
-                fontFamily: "Roboto",
-                fontSize: { xs: "20px", md: "24px" },
-                fontWeight: 500, // Set to 500 for the title
-                lineHeight: "36px",
-                textAlign: "left",
-                color: "rgba(249, 241, 230, 0.5)",
-              }}
-            >
-              Registration Successful! 🥳
-            </Typography>
-            <Divider
-              sx={{
-                background: "rgba(249, 241, 230, 0.5)",
-                height: "2px",
-                mb: 4,
-              }}
-            />
-
-            {/* Registration Details in 2-column format */}
+            {/* Success Message */}
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-                gap: { xs: "10px", md: "10px 20px" },
-                backgroundColor: "transparent", // No background color
-                border: "1px solid rgba(249, 241, 230, 0.5)", // White border color and thickness
-                padding: { xs: "15px", md: "20px" },
-                borderRadius: 2,
-                color: "#F9F1E6",
-                alignItems: "start",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                py: 6,
               }}
             >
-              {/* Column 1 */}
-              <Box>
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Name:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.name || 'N/A'}</Typography>
+              <Typography
+                variant="h4"
+                gutterBottom
+                sx={{
+                  fontFamily: "Roboto",
+                  fontSize: { xs: "28px", md: "36px" },
+                  fontWeight: 700,
+                  lineHeight: "1.4",
+                  color: "#C77DFF",
+                  mb: 3,
+                }}
+              >
+                🎉 Registration Successful! 🎉
+              </Typography>
 
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Registration Number:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.registerNumber || 'N/A'}</Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "Roboto",
+                  fontSize: { xs: "18px", md: "22px" },
+                  fontWeight: 500,
+                  lineHeight: "1.6",
+                  color: "rgba(249, 241, 230, 0.9)",
+                  mb: 2,
+                }}
+              >
+                You&apos;ve successfully registered for Resonate Hackathon!
+              </Typography>
 
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>SRM Email:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.srmEmail || 'N/A'}</Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontFamily: "Roboto",
+                  fontSize: { xs: "14px", md: "16px" },
+                  fontWeight: 400,
+                  lineHeight: "1.8",
+                  color: "rgba(249, 241, 230, 0.7)",
+                  mb: 4,
+                  maxWidth: "500px",
+                }}
+              >
+                We&apos;re excited to have you join us! Keep checking your email for further updates and event details.
+                <br />
+                <br />
+                See you at the event! 🚀
+              </Typography>
 
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Personal Email:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.personalEmail || 'N/A'}</Typography>
-
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Year of Study:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.yearOfStudy || 'N/A'}</Typography>
-              </Box>
-
-              {/* Column 2 */}
-              <Box>
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>WhatsApp Number:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.whatsappNumber || 'N/A'}</Typography>
-
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Phone Number:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.phoneNumber || 'N/A'}</Typography>
-
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Course:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.course || 'N/A'}</Typography>
-
-                <Typography sx={{ fontWeight: 500, fontSize: { xs: "16px", md: "20px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>Department:</Typography>
-                <Typography sx={{ fontWeight: 400, fontSize: { xs: "12px", md: "15px" }, lineHeight: "36px", color: "rgba(249, 241, 230, 0.5)" }}>{formData.department || 'N/A'}</Typography>
+              <Box
+                sx={{
+                  backgroundColor: "rgba(199, 125, 255, 0.1)",
+                  border: "1px solid rgba(199, 125, 255, 0.3)",
+                  borderRadius: 2,
+                  padding: { xs: "15px", md: "20px" },
+                  mt: 2,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: "Roboto",
+                    fontSize: { xs: "12px", md: "14px" },
+                    fontWeight: 400,
+                    lineHeight: "1.6",
+                    color: "rgba(249, 241, 230, 0.8)",
+                  }}
+                >
+                  <strong>Event Date:</strong> 3 & 4 April
+                  <br />
+                  <strong>Venue:</strong> Mini Hall 2
+                </Typography>
               </Box>
             </Box>
           </Paper>
