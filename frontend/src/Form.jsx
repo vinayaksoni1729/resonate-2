@@ -219,7 +219,7 @@ const Form = () => {
         formDataToSend.append('paymentProof', formData.paymentProof);
 
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/form`,
+          `https://resonate-2.onrender.com/api/form`,
           formDataToSend,
           {
             headers: {
