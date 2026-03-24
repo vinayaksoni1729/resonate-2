@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Container,
@@ -27,7 +27,7 @@ const Form = () => {
     teamName: "",
     numberOfMembers: "",
     trackChoice: "",
-    members: [], // Will store all members including leader
+    members: [], 
     paymentProof: null,
   });
 
@@ -36,8 +36,29 @@ const Form = () => {
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const stepperRef = useRef(null);
 
-  // Generate dynamic steps based on number of members
+  useEffect(() => {
+    if (stepperRef.current) {
+      const stepperContainer = stepperRef.current;
+      const steps = stepperContainer.querySelectorAll('[class*="MuiStep-root"]');
+      
+      if (steps[activeStep]) {
+        const activeStepElement = steps[activeStep];
+        const containerRect = stepperContainer.getBoundingClientRect();
+        const stepRect = activeStepElement.getBoundingClientRect();
+        
+        // Calculate scroll position to center the active step
+        const scrollLeft = stepperContainer.scrollLeft + (stepRect.left - containerRect.left) - (containerRect.width / 2) + (stepRect.width / 2);
+        
+        stepperContainer.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeStep]);
+
   const getSteps = () => {
     const baseSteps = ["About", "Team Details"];
     const numMembers = parseInt(formData.numberOfMembers) || 0;
@@ -61,10 +82,8 @@ const Form = () => {
     const numMembers = parseInt(formData.numberOfMembers) || 0;
     
     if (step === 0) {
-      // About the Event step - no validation needed
       return newErrors;
     } else if (step === 1) {
-      // Team Details validation
       if (!formData.teamName.trim()) {
         newErrors.teamName = "Team name is required";
       }
@@ -75,7 +94,6 @@ const Form = () => {
         newErrors.trackChoice = "Please select a hackathon track";
       }
     } else if (step >= 2 && step < 2 + numMembers) {
-      // Member validation
       const memberIndex = step - 2;
       const member = formData.members[memberIndex];
       
@@ -121,7 +139,6 @@ const Form = () => {
       [name]: value,
     });
     
-    // Initialize members array when numberOfMembers changes
     if (name === "numberOfMembers") {
       const numMembers = parseInt(value);
       const newMembers = Array(numMembers).fill(null).map((_, index) => 
@@ -129,7 +146,6 @@ const Form = () => {
           name: "",
           registerNumber: "",
           hostelName: "",
-          // Leader-specific fields (only for index 0)
           ...(index === 0 ? {
             personalEmail: "",
             phoneNumber: "",
@@ -156,12 +172,10 @@ const Form = () => {
     });
   };
 
-  // Handle register number input (convert to uppercase)
   const handleRegisterNumberChange = (memberIndex, value) => {
     handleMemberChange(memberIndex, "registerNumber", value.toUpperCase());
   };
 
-  // Handle phone number input and restrict to 10 digits (leader only)
   const handlePhoneNumberChange = (value) => {
     if (/^\d{0,10}$/.test(value)) {
       const newMembers = [...formData.members];
@@ -213,19 +227,16 @@ const Form = () => {
         formDataToSend.append('numberOfMembers', formData.numberOfMembers);
         formDataToSend.append('trackChoice', formData.trackChoice);
         
-        // Process members data to include hostel details if applicable
         const membersData = formData.members.map(member => {
           const memberData = {
             name: member.name,
             registerNumber: member.registerNumber,
           };
           
-          // Add hostel details if provided
           if (member.hostelName && member.hostelName.trim()) {
             memberData.hostelName = member.hostelName;
           }
           
-          // Add leader-specific fields for first member
           if (formData.members.indexOf(member) === 0) {
             memberData.personalEmail = member.personalEmail;
             memberData.phoneNumber = member.phoneNumber;
@@ -262,7 +273,7 @@ const Form = () => {
   };
 
   const errorStyle = {
-    color: "#F28B82", // Light shade of red
+    color: "#F28B82", 
     mt: 1,
     textAlign: "right",
   };
@@ -342,44 +353,51 @@ const Form = () => {
           >
             {/* Registration Details */}
             {/* The rest of the submitted content */}
-            <Stepper
-              activeStep={steps.length}
-              alternativeLabel
-              sx={{
-                width: "100%",
-                mb: 4,
-                "& .MuiStepIcon-root": {
-                  color: "#333333",
-                  fontSize: { xs: "1.2rem", md: "1.5rem" },
-                  "&.Mui-active": {
-                    color: "#C77DFF",
+            <Box sx={{ overflowX: "auto", overflowY: "hidden", mb: 4, width: "100%" }}>
+              <Stepper
+                activeStep={steps.length}
+                alternativeLabel
+                sx={{
+                  width: "100%",
+                  minWidth: { xs: "max-content", md: "100%" },
+                  "& .MuiStepIcon-root": {
+                    color: "#333333",
+                    fontSize: { xs: "1rem", md: "1.5rem" },
+                    "&.Mui-active": {
+                      color: "#C77DFF",
+                    },
+                    "&.Mui-completed": {
+                      color: "#C77DFF",
+                    },
                   },
-                  "&.Mui-completed": {
-                    color: "#C77DFF",
+                  "& .MuiStepLabel-label": {
+                    color: "#BDBDBD",
+                    fontFamily: "Roboto",
+                    fontSize: { xs: "10px", md: "16px" },
+                    fontWeight: 700,
+                    lineHeight: { xs: "14px", md: "24px" },
+                    textAlign: "center",
+                    whiteSpace: "nowrap",
+                    "&.Mui-active": {
+                      color: "#C77DFF",
+                    },
+                    "&.Mui-completed": {
+                      color: "#C77DFF",
+                    },
                   },
-                },
-                "& .MuiStepLabel-label": {
-                  color: "#BDBDBD",
-                  fontFamily: "Roboto",
-                  fontSize: { xs: "12px", md: "16px" },
-                  fontWeight: 700,
-                  lineHeight: { xs: "20px", md: "24px" },
-                  textAlign: "center",
-                  "&.Mui-active": {
-                    color: "#C77DFF",
+                  "& .MuiStep-root": {
+                    minWidth: { xs: "60px", md: "auto" },
+                    flex: { xs: "0 0 auto", md: "1 1 auto" },
                   },
-                  "&.Mui-completed": {
-                    color: "#C77DFF",
-                  },
-                },
-              }}
-            >
-              {steps.map((label) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
+                }}
+              >
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
             {/* Success Message */}
             <Box
               sx={{
@@ -467,69 +485,86 @@ const Form = () => {
         ) : (
           <Paper
             sx={{
-              p: { xs: 2, md: 4 },
+              p: { xs: 2, md: 3 },
               backgroundColor: "#111",
               borderRadius: 2,
-              height: { md: "780px" },
+              height: { md: "auto", xs: "auto" },
+              maxHeight: { md: "90vh" },
               width: { xs: "80vw", md: "100%" },
               maxWidth: { xs: "400px", md: "590px" },
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
+              justifyContent: "flex-start",
+              overflow: "hidden",
+              flexGrow: 1,
             }}
           >
-            <Stepper
-              activeStep={activeStep}
-              alternativeLabel
-              sx={{
-                width: "100%",
-                "& .MuiStepIcon-root": {
-                  color: "#333333",
-                  fontSize: { xs: "1.2rem", md: "1.5rem" },
-                  "&.Mui-active": {
-                    color: "#C77DFF",
+            <Box ref={stepperRef} sx={{ overflowX: "auto", overflowY: "hidden", mb: 1, width: "100%", scrollBehavior: "smooth", flexShrink: 0 }}>
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                sx={{
+                  width: "100%",
+                  minWidth: { xs: "max-content", md: "100%" },
+                  py: { xs: 1, md: 0.5 },
+                  "& .MuiStepIcon-root": {
+                    color: "#333333",
+                    fontSize: { xs: "1rem", md: "1.25rem" },
+                    "&.Mui-active": {
+                      color: "#C77DFF",
+                    },
+                    "&.Mui-completed": {
+                      color: "#C77DFF",
+                    },
                   },
-                  "&.Mui-completed": {
-                    color: "#C77DFF",
+                  "& .MuiStepLabel-label": {
+                    color: "#BDBDBD",
+                    fontFamily: "Roboto",
+                    fontSize: { xs: "9px", md: "13px" },
+                    fontWeight: 700,
+                    lineHeight: { xs: "12px", md: "18px" },
+                    textAlign: "center",
+                    whiteSpace: "nowrap",
+                    "&.Mui-active": {
+                      color: "#C77DFF",
+                    },
+                    "&.Mui-completed": {
+                      color: "#C77DFF",
+                    },
                   },
-                },
-                "& .MuiStepLabel-label": {
-                  color: "#BDBDBD",
-                  fontFamily: "Roboto",
-                  fontSize: { xs: "12px", md: "16px" },
-                  fontWeight: 700,
-                  lineHeight: { xs: "20px", md: "24px" },
-                  textAlign: "center",
-                  "&.Mui-active": {
-                    color: "#C77DFF",
+                  "& .MuiStep-root": {
+                    minWidth: { xs: "60px", md: "auto" },
+                    flex: { xs: "0 0 auto", md: "1 1 auto" },
+                    py: { xs: 1, md: 0 },
                   },
-                  "&.Mui-completed": {
-                    color: "#C77DFF",
+                  "& .MuiStepConnector-root": {
+                    my: { xs: 0.5, md: 0.25 },
                   },
-                },
-              }}
-            >
-              {steps.map((label) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
+                }}
+              >
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
 
             {/* Form Content */}
             {/* Continue with the form fields and actions (Back, Next, Submit buttons) */}
             {/* Add Typography and Divider for the section header */}
-            <Box sx={{ mt: 4 }}>
+            <Box sx={{ mt: 2, mb: 2 }}>
               <Typography
                 variant="h5"
                 gutterBottom
                 sx={{
                   fontFamily: "Roboto",
-                  fontSize: { xs: "20px", md: "24px" },
+                  fontSize: { xs: "18px", md: "22px" },
                   fontWeight: 400,
-                  lineHeight: "28.13px",
+                  lineHeight: "1.2",
                   textAlign: "left",
                   color: "rgba(249, 241, 230, 0.5)",
+                  mb: 1,
                 }}
               >
                 {activeStep === 0 ? "About the Event" : `${steps[activeStep]} Information`}
@@ -538,7 +573,7 @@ const Form = () => {
                 sx={{
                   background: "rgba(249, 241, 230, 0.5)",
                   height: "2px",
-                  mb: 4,
+                  mb: 2,
                 }}
               />
             </Box>
@@ -548,8 +583,11 @@ const Form = () => {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "20px",
+                gap: "16px",
                 width: "100%",
+                flexGrow: 1,
+                overflowY: "auto",
+                paddingRight: "8px",
               }}
             >
               {activeStep === 0 && (
@@ -559,24 +597,24 @@ const Form = () => {
                     <Typography
                       variant="h6"
                       gutterBottom
-                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 1, fontSize: { xs: "16px", md: "18px" } }}
+                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 0.5, fontSize: { xs: "14px", md: "16px" } }}
                     >
                       Hackathon Tracks
                     </Typography>
-                    <Box sx={{ pl: 2 }}>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                    <Box sx={{ pl: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         1. HealthTech & Preventive Care Intelligence
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         2. Inclusive FinTech & Financial Wellness
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         3. Climate Tech & Sustainability Execution
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         4. Agentic AI & Workforce Augmentation
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         5. Smart Infrastructure & Urban Resilience
                       </Typography>
                     </Box>
@@ -586,21 +624,21 @@ const Form = () => {
                     <Typography
                       variant="h6"
                       gutterBottom
-                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 1, fontSize: { xs: "16px", md: "18px" } }}
+                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 0.5, fontSize: { xs: "14px", md: "16px" } }}
                     >
                       Event Details
                     </Typography>
-                    <Box sx={{ pl: 2 }}>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                    <Box sx={{ pl: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Venue:</strong> Mini Hall 2
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Date:</strong> 3 & 4 April
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Team Size:</strong> 2-4 members
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Registration Fee:</strong> ₹200 per team
                       </Typography>
                     </Box>
@@ -610,21 +648,21 @@ const Form = () => {
                     <Typography
                       variant="h6"
                       gutterBottom
-                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 1, fontSize: { xs: "16px", md: "18px" } }}
+                      sx={{ color: "#C77DFF", fontWeight: 600, mb: 0.5, fontSize: { xs: "14px", md: "16px" } }}
                     >
                       Prizes
                     </Typography>
-                    <Box sx={{ pl: 2 }}>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                    <Box sx={{ pl: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>First Place:</strong> ₹15,000
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Second Place:</strong> ₹10,000
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Third Place:</strong> Internship opportunities and coupons
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.5, fontSize: { xs: "12px", md: "14px" } }}>
+                      <Typography variant="body2" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 0.25, fontSize: { xs: "11px", md: "13px" } }}>
                         <strong>Fourth Place:</strong> Internship opportunities and coupons
                       </Typography>
                     </Box>
@@ -984,9 +1022,6 @@ const Form = () => {
                   return (
                     <>
                       <Box>
-                        <Typography variant="h6" gutterBottom sx={{ color: "#C77DFF", mb: 2 }}>
-                          Payment Information
-                        </Typography>
                         <Typography variant="body1" sx={{ color: "rgba(249, 241, 230, 0.9)", mb: 3 }}>
                           Registration Fee: <strong>₹200 per team</strong>
                         </Typography>
@@ -1056,11 +1091,11 @@ const Form = () => {
                 return null;
               })()}
 
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mt: 1, flexShrink: 0 }}>
                 <Button
                   disabled={activeStep === 0}
                   onClick={handleBack}
-                  sx={{ mt: 2, color: "white" }}
+                  sx={{ mt: 1, color: "white", fontSize: { xs: "12px", md: "14px" }, py: { xs: 0.5, md: 1 } }}
                 >
                   Back
                 </Button>
@@ -1070,8 +1105,9 @@ const Form = () => {
                     variant="contained"
                     color="primary"
                     sx={{
-                      mt: 2,
-                      padding: "10px",
+                      mt: 1,
+                      padding: "8px 16px",
+                      fontSize: { xs: "12px", md: "14px" },
                       fontWeight: "bold",
                       backgroundColor: "#C77DFF",
                     }}
@@ -1085,11 +1121,12 @@ const Form = () => {
                     color="primary"
                     onClick={handleNext}
                     sx={{
-                      mt: 2,
-                      padding: "10px",
+                      mt: 1,
+                      padding: "8px 16px",
+                      fontSize: { xs: "12px", md: "14px" },
                       fontWeight: "bold",
                       backgroundColor: "#C77DFF",
-                      minWidth: "210px",
+                      minWidth: "120px",
                     }}
                   >
                     Continue
