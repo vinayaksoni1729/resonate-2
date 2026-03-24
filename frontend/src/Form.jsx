@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import bg from "../assets/images/bg-space.jpeg";
+import paymentQR from "../assets/images/payment_qr.png";
 
 const Form = () => {
   const [formData, setFormData] = useState({
@@ -985,12 +986,12 @@ const Form = () => {
                             justifyContent: "center",
                             alignItems: "center",
                             mb: 3,
+                            backgroundImage: `url(${paymentQR})`,
+                            backgroundSize: "contain",
+                            backgroundRepeat: "no-repeat",
+                            backgroundPosition: "center",
                           }}
-                        >
-                          <Typography variant="body1" sx={{ color: "rgba(249, 241, 230, 0.5)" }}>
-                            UPI QR Code will be displayed here
-                          </Typography>
-                        </Box>
+                        />
 
                         <Typography variant="subtitle1" gutterBottom sx={{ color: "white", mt: 3 }}>
                           Upload Payment Proof
