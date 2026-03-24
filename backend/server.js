@@ -12,6 +12,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  if (req.method === "HEAD") {
+    return res.status(200).end();
+  }
+  next();
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
