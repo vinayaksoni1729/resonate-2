@@ -81,6 +81,11 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
       leaderRegisterNumber: parsedMembers[0]?.registerNumber || "",
       leaderEmail: parsedMembers[0]?.personalEmail || "",
       paymentProofUrl,
+      
+      status: "pending",        
+      teamId: null,             
+      checkIn: false,           
+      
       createdAt: Timestamp.now(),
       submittedAt: new Date().toISOString(),
     };
@@ -95,7 +100,6 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
   } catch (err) {
     console.error("ERROR:", err);
     
-    // Handle multer errors
     if (err instanceof multer.MulterError) {
       return res.status(400).json({
         message: "File upload error: " + err.message,
