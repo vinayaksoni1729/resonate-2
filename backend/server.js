@@ -12,6 +12,30 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const rateLimitMap = new Map();
+
+app.use((req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!rateLimitMap.has(ip)) {
+    rateLimitMap.set(ip, []);
+  }
+  
+  const timestamps = rateLimitMap.get(ip);
+  const recentRequests = timestamps.filter(t => now - t < 60000); 
+  
+  if (recentRequests.length >= 5) {
+    return res.status(429).json({
+      message: "Too many requests. Please try again later.",
+    });
+  }
+  
+  recentRequests.push(now);
+  rateLimitMap.set(ip, recentRequests);
+  next();
+});
+
 app.use((req, res, next) => {
   if (req.method === "HEAD") {
     return res.status(200).end();
@@ -34,8 +58,6 @@ const upload = multer({
 });
 
 app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
-  let registrationData; // 
-  
   try {
     const { teamName, numberOfMembers, trackChoice, members } = req.body;
 
@@ -50,18 +72,22 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
     if (parsedMembers.length > 0 && parsedMembers[0].registerNumber) {
       const leaderRegNo = parsedMembers[0].registerNumber;
       
-      const registrationsRef = collection(db, "registrations");
-      const q = query(
-        registrationsRef,
-        where("leaderRegisterNumber", "==", leaderRegNo)
-      );
-      const querySnapshot = await getDocs(q);
+      try {
+        const registrationsRef = collection(db, "registrations");
+        const q = query(
+          registrationsRef,
+          where("leaderRegisterNumber", "==", leaderRegNo)
+        );
+        const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        return res.status(400).json({
-          message: "Team leader already registered",
-          duplicate: true,
-        });
+        if (!querySnapshot.empty) {
+          return res.status(400).json({
+            message: "Team leader already registered",
+            duplicate: true,
+          });
+        }
+      } catch (queryErr) {
+        console.error("Duplicate check error:", queryErr.message);
       }
     }
 
@@ -75,7 +101,8 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
     await uploadBytes(storageRef, file.buffer);
     const paymentProofUrl = await getDownloadURL(storageRef);
 
-    registrationData = {
+   
+    const registrationData = {
       teamName,
       numberOfMembers: Number(numberOfMembers),
       trackChoice,
@@ -84,25 +111,14 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
       leaderEmail: parsedMembers[0]?.personalEmail || "",
       paymentProofUrl,
       
-      status: "pending",        
-      teamId: null,             
-      checkIn: false,           
+      status: "pending",
+      teamId: null,
+      checkIn: false,
       
       createdAt: Timestamp.now(),
       submittedAt: new Date().toISOString(),
     };
-
-    console.log("\n📤 ABOUT TO SAVE TO FIRESTORE:");
-    console.log("Data:", JSON.stringify(registrationData, null, 2));
-    console.log("Field Types:");
-    console.log("  - status:", typeof registrationData.status, "=", registrationData.status);
-    console.log("  - teamId:", typeof registrationData.teamId, "=", registrationData.teamId);
-    console.log("  - checkIn:", typeof registrationData.checkIn, "=", registrationData.checkIn);
-    console.log("  - teamName:", typeof registrationData.teamName);
-    console.log("  - numberOfMembers:", typeof registrationData.numberOfMembers);
-    console.log("  - createdAt:", registrationData.createdAt.constructor.name);
-    console.log("  - submittedAt:", typeof registrationData.submittedAt);
-
+    
     await addDoc(collection(db, "registrations"), registrationData);
 
     res.status(201).json({
@@ -111,36 +127,22 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
     });
 
   } catch (err) {
-    console.error("\n❌ ERROR CAUGHT:");
-    console.error("Error Name:", err.name);
-    console.error("Error Code:", err.code);
-    console.error("Error Message:", err.message);
-    console.error("Full Error:", JSON.stringify(err, null, 2));
-    console.error("Stack:", err.stack);
-    
-    console.error("\n📤 Data that failed to save:");
-    console.error("registrationData:", JSON.stringify(registrationData, null, 2));
+    console.error("Error:", err.message);
     
     if (err instanceof multer.MulterError) {
-      console.error("🎯 Multer Error Detected");
       return res.status(400).json({
         message: "File upload error: " + err.message,
       });
     }
     
-    if (err.code === 'permission-denied' || err.message.includes('PERMISSION_DENIED')) {
-      console.error("🚫 FIRESTORE PERMISSION DENIED - Check your Firestore Rules!");
+    if (err.code === 'permission-denied') {
       return res.status(403).json({
-        message: "Firestore permission denied - check rules",
-        error: err.message,
+        message: "Registration validation failed. Please check your data.",
       });
     }
     
-    console.error("\n📋 Returning 500 error to client");
     res.status(500).json({
       message: "Server error: " + err.message,
-      errorCode: err.code,
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 });

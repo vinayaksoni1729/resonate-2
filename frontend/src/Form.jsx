@@ -62,7 +62,7 @@ const Form = () => {
   useEffect(() => {
     const wakeUpBackend = async () => {
       try {
-        await fetch("https://resonate-2.onrender.com/api/form", {
+        await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://resonate-2.onrender.com'}/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -268,7 +268,7 @@ const Form = () => {
         formDataToSend.append('paymentProof', formData.paymentProof);
 
         const response = await axios.post(
-          `https://resonate-2.onrender.com/api/form`,
+          `${import.meta.env.VITE_BACKEND_URL || 'https://resonate-2.onrender.com'}/api/form`,
           formDataToSend,
           {
             headers: {
