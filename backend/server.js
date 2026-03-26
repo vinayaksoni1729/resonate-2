@@ -90,6 +90,17 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
       submittedAt: new Date().toISOString(),
     };
 
+    console.log("\n📤 ABOUT TO SAVE TO FIRESTORE:");
+    console.log("Data:", JSON.stringify(registrationData, null, 2));
+    console.log("Field Types:");
+    console.log("  - status:", typeof registrationData.status, "=", registrationData.status);
+    console.log("  - teamId:", typeof registrationData.teamId, "=", registrationData.teamId);
+    console.log("  - checkIn:", typeof registrationData.checkIn, "=", registrationData.checkIn);
+    console.log("  - teamName:", typeof registrationData.teamName);
+    console.log("  - numberOfMembers:", typeof registrationData.numberOfMembers);
+    console.log("  - createdAt:", registrationData.createdAt.constructor.name);
+    console.log("  - submittedAt:", typeof registrationData.submittedAt);
+
     await addDoc(collection(db, "registrations"), registrationData);
 
     res.status(201).json({
@@ -98,16 +109,36 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
     });
 
   } catch (err) {
-    console.error("ERROR:", err);
+    console.error("\n❌ ERROR CAUGHT:");
+    console.error("Error Name:", err.name);
+    console.error("Error Code:", err.code);
+    console.error("Error Message:", err.message);
+    console.error("Full Error:", JSON.stringify(err, null, 2));
+    console.error("Stack:", err.stack);
+    
+    console.error("\n📤 Data that failed to save:");
+    console.error("registrationData:", JSON.stringify(registrationData, null, 2));
     
     if (err instanceof multer.MulterError) {
+      console.error("🎯 Multer Error Detected");
       return res.status(400).json({
         message: "File upload error: " + err.message,
       });
     }
     
+    if (err.code === 'PERMISSION_DENIED' || err.message.includes('PERMISSION_DENIED')) {
+      console.error("🚫 FIRESTORE PERMISSION DENIED - Check your Firestore Rules!");
+      return res.status(403).json({
+        message: "Firestore permission denied - check rules",
+        error: err.message,
+      });
+    }
+    
+    console.error("\n📋 Returning 500 error to client");
     res.status(500).json({
       message: "Server error: " + err.message,
+      errorCode: err.code,
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 });
