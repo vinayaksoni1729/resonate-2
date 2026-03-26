@@ -34,6 +34,8 @@ const upload = multer({
 });
 
 app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
+  let registrationData; // 
+  
   try {
     const { teamName, numberOfMembers, trackChoice, members } = req.body;
 
@@ -73,7 +75,7 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
     await uploadBytes(storageRef, file.buffer);
     const paymentProofUrl = await getDownloadURL(storageRef);
 
-    const registrationData = {
+    registrationData = {
       teamName,
       numberOfMembers: Number(numberOfMembers),
       trackChoice,
@@ -126,7 +128,7 @@ app.post("/api/form", upload.single("paymentProof"), async (req, res) => {
       });
     }
     
-    if (err.code === 'PERMISSION_DENIED' || err.message.includes('PERMISSION_DENIED')) {
+    if (err.code === 'permission-denied' || err.message.includes('PERMISSION_DENIED')) {
       console.error("🚫 FIRESTORE PERMISSION DENIED - Check your Firestore Rules!");
       return res.status(403).json({
         message: "Firestore permission denied - check rules",
