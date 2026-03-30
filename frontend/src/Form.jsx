@@ -22,7 +22,7 @@ import { motion } from "framer-motion";
 import bg from "../assets/images/bg-space.jpeg";
 import paymentQR from "../assets/images/payment_qr.png";
 
-const REGISTRATION_OPEN = true;
+const REGISTRATION_OPEN = false;
 
 const Form = () => {
   const [formData, setFormData] = useState({
@@ -358,7 +358,7 @@ const Form = () => {
             Thank you for the overwhelming response!
             <br />
             We&apos;ve reached full capacity for{" "}
-            <strong style={{ color: "#C77DFF" }}>Resonate Hackathon 2.0</strong>.
+            <strong style={{ color: "#C77DFF" }}>Resonate 2.0</strong>.
           </Typography>
 
           <Typography
