@@ -22,7 +22,7 @@ import { motion } from "framer-motion";
 import bg from "../assets/images/bg-space.jpeg";
 import paymentQR from "../assets/images/payment_qr.png";
 
-const REGISTRATION_OPEN = false;
+const REGISTRATION_OPEN = true;
 
 const Form = () => {
   const [formData, setFormData] = useState({
