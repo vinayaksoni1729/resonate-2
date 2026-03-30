@@ -22,6 +22,8 @@ import { motion } from "framer-motion";
 import bg from "../assets/images/bg-space.jpeg";
 import paymentQR from "../assets/images/payment_qr.png";
 
+const REGISTRATION_OPEN = false;
+
 const Form = () => {
   const [formData, setFormData] = useState({
     teamName: "",
@@ -296,6 +298,98 @@ const Form = () => {
     mt: 1,
     textAlign: "right",
   };
+
+  if (!REGISTRATION_OPEN) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background: "#111111",
+          backgroundImage: `url(${bg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          color: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          padding: "2rem",
+        }}
+      >
+        <Box
+          component={motion.div}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          sx={{
+            maxWidth: "600px",
+            padding: { xs: "2rem", md: "3rem" },
+            borderRadius: "20px",
+            background: "rgba(17, 17, 17, 0.95)",
+            border: "2px solid #C77DFF",
+            boxShadow: "0 0 40px rgba(199, 125, 255, 0.3)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: "2rem", md: "2.5rem" },
+              marginBottom: "1rem",
+              color: "#C77DFF",
+              fontWeight: 700,
+              fontFamily: "Roboto",
+            }}
+          >
+            Registrations Closed 🚀
+          </Typography>
+
+          <Typography
+            variant="h6"
+            sx={{
+              fontSize: { xs: "1rem", md: "1.1rem" },
+              lineHeight: "1.8",
+              color: "rgba(249, 241, 230, 0.9)",
+              marginBottom: "1.5rem",
+              fontFamily: "Roboto",
+            }}
+          >
+            Thank you for the overwhelming response!
+            <br />
+            We&apos;ve reached full capacity for{" "}
+            <strong style={{ color: "#C77DFF" }}>Resonate Hackathon 2.0</strong>.
+          </Typography>
+
+          <Typography
+            variant="body1"
+            sx={{
+              marginTop: "1rem",
+              opacity: 0.9,
+              color: "rgba(249, 241, 230, 0.8)",
+              fontSize: { xs: "0.95rem", md: "1rem" },
+              fontFamily: "Roboto",
+            }}
+          >
+            Stay tuned for next year&apos;s edition ✨
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              marginTop: "2rem",
+              opacity: 0.7,
+              color: "rgba(199, 125, 255, 0.7)",
+              fontSize: "0.9rem",
+              fontFamily: "Roboto",
+            }}
+          >
+            See you in 2027!
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Container
